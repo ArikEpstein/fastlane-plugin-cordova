@@ -23,20 +23,24 @@ module Fastlane
         build_flag: 'buildFlag'
       }
 
-      def self.get_platform_args(params, args_map)
+      # extract arguments only valid for the platform from all arguments
+      # + map action params to the cli param they will be used for
+      def self.get_platform_args(params, platform_args_map)
         platform_args = []
-        args_map.each do |action_key, cli_param|
+        platform_args_map.each do |action_key, cli_param|
           param_value = params[action_key]
 
+          # handle `build_flag` being an Array
           if action_key.to_s == 'build_flag' && param_value.kind_of?(Array)
             unless param_value.empty?
               param_value.each do |flag|
                 platform_args << "--#{cli_param}=#{flag.shellescape}"
               end
             end
+          # handle all other cases
           else
             unless param_value.to_s.empty?
-              platform_args << "--#{cli_param}=#{Shellwords.escape(param_value)}"
+              platform_args << "--#{cli_param}=#{param_value.shellescape}"
             end
           end
         end
@@ -56,6 +60,7 @@ module Fastlane
         app_identifier = CredentialsManager::AppfileConfig.try_fetch_value(:app_identifier)
 
         if params[:provisioning_profile].empty?
+          # If `match` or `sigh` were used before this, use the certificates returned from there
           params[:provisioning_profile] = ENV['SIGH_UUID'] || ENV["sigh_#{app_identifier}_#{params[:type].sub("-","")}"]
         end
 
@@ -69,25 +74,29 @@ module Fastlane
         return self.get_platform_args(params, IOS_ARGS_MAP)
       end
 
-      def self.check_platform(params)
-        platform = params[:platform]
-        if platform && !File.directory?("./platforms/#{platform}")
-          if params[:cordova_no_fetch]
-            sh "cordova platform add #{platform} --nofetch"
-          else
-            sh "cordova platform add #{platform}"
-          end
-        end
-      end
+    # add platform if missing (run step #1)
+     def self.check_platform(params)
+       platform = params[:platform]
+       if platform && !File.directory?("./platforms/#{platform}")
+         if params[:cordova_no_fetch]
+           sh "cordova platform add #{platform} --no-interactive --nofetch"
+         else
+           sh "cordova platform add #{platform} --no-interactive"
+         end
+       end
+     end
 
+      # app_name
       def self.get_app_name()
         config = REXML::Document.new(File.open('config.xml'))
         return config.elements['widget'].elements['name'].first.value
       end
 
+      # actual building! (run step #2)
       def self.build(params)
         args = [params[:release] ? '--release' : '--debug']
         args << '--device' if params[:device]
+        args << '--prod' if params[:prod]
         args << '--browserify' if params[:browserify]
 
         if !params[:cordova_build_config_file].to_s.empty?
@@ -98,9 +107,10 @@ module Fastlane
         ios_args = self.get_ios_args(params) if params[:platform].to_s == 'ios'
 
         if params[:cordova_prepare]
-          sh "cordova prepare #{params[:platform]} #{args.join(' ')} #{ios_args} -- #{android_args}"
+          sh "cordova prepare #{params[:platform]} --no-interactive #{args.join(' ')}"
         end
 
+        # special handling for `build_number` param
         if params[:platform].to_s == 'ios' && !params[:build_number].to_s.empty?
           cf_bundle_version = params[:build_number].to_s
           Actions::UpdateInfoPlistAction.run(
@@ -113,14 +123,23 @@ module Fastlane
         end
 
         sh "cordova compile #{params[:platform]} #{args.join(' ')} #{ios_args} -- #{android_args}"
+        if params[:platform].to_s == 'ios'
+          sh "cordova compile #{params[:platform]} --no-interactive #{args.join(' ')} -- #{ios_args}"
+          # sh "cordova build #{params[:platform]} #{args.join(' ')} -- #{ios_args}"
+        elsif params[:platform].to_s == 'android'
+          sh "cordova compile #{params[:platform]} --no-interactive #{args.join(' ')} -- -- #{android_args}"
+        end
       end
 
+      # export build paths (run step #3)
       def self.set_build_paths(is_release)
         app_name = self.get_app_name()
         build_type = is_release ? 'release' : 'debug'
 
-        ENV['CORDOVA_ANDROID_RELEASE_BUILD_PATH'] = "./platforms/android/app/build/outputs/apk/release/app-#{build_type}.apk"
+        ENV['CORDOVA_ANDROID_RELEASE_BUILD_PATH'] = "./platforms/android/app/build/outputs/apk/#{build_type}/app-#{build_type}.apk"
         ENV['CORDOVA_IOS_RELEASE_BUILD_PATH'] = "./platforms/ios/build/device/#{app_name}.ipa"
+
+        # TODO: https://github.com/bamlab/fastlane-plugin-cordova/issues/7
       end
 
       def self.run(params)
@@ -173,6 +192,16 @@ module Fastlane
               UI.user_error!("Device should be boolean") unless [false, true].include? value
             end
           ),
+          FastlaneCore::ConfigItem.new(
+            key: :prod,
+            env_name: "CORDOVA_PROD",
+            description: "Build for production",
+            is_string: false,
+            default_value: false,
+            verify_block: proc do |value|
+            UI.user_error!("Prod should be boolean") unless [false, true].include? value
+          end
+        ),
           FastlaneCore::ConfigItem.new(
             key: :type,
             env_name: "CORDOVA_IOS_PACKAGE_TYPE",
