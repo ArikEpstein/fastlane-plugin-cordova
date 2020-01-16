@@ -45,7 +45,7 @@ module Fastlane
           # handle all other cases
           else
             unless param_value.to_s.empty?
-              platform_args << "--#{cli_param}=#{param_value.shellescape}"
+              platform_args << "--#{cli_param}=#{Shellwords.escape(param_value)}"
             end
           end
         end
@@ -80,19 +80,19 @@ module Fastlane
       end
 
         # add platform if missing (run step #1)
-       def self.check_platform(params)
-         platform = params[:platform]
-         if platform && !File.directory?("./platforms/#{platform}")
-           if params[:cordova_no_fetch]
-             sh "cordova platform add #{platform} --no-telemetry --nofetch"
-           else
-             sh "cordova platform add #{platform} --no-telemetry"
+     def self.check_platform(params)
+             platform = params[:platform]
+             if platform && !File.directory?("./platforms/#{platform}")
+               if params[:cordova_no_fetch]
+                 sh "cordova platform add #{platform} --nofetch"
+               else
+                 sh "cordova platform add #{platform}"
+               end
+             end
            end
-         end
-       end
 
       # app_name
-      def self.get_app_name
+      def self.get_app_name()
         config = REXML::Document.new(File.open('config.xml'))
         return config.elements['widget'].elements['name'].first.value
       end
@@ -114,7 +114,7 @@ module Fastlane
         ios_args = self.get_ios_args(params) if params[:platform].to_s == 'ios'
 
         if params[:cordova_prepare]
-          sh "cordova prepare #{params[:platform]} --no-telemetry #{args.join(' ')}"
+          sh "cordova prepare #{params[:platform]} #{args.join(' ')}"
         end
 
          # special handling for `build_number` param
@@ -130,9 +130,9 @@ module Fastlane
          end
 
         if params[:platform].to_s == 'ios'
-          sh "cordova compile #{params[:platform]} --no-telemetry #{args.join(' ')} -- #{ios_args}"
+          sh "cordova compile #{params[:platform]} #{args.join(' ')} -- #{ios_args}"
         elsif params[:platform].to_s == 'android'
-          sh "cordova compile #{params[:platform]} --no-telemetry #{args.join(' ')} -- -- #{android_args}"
+          sh "cordova compile #{params[:platform]} #{args.join(' ')} -- -- #{android_args}"
         end
       end
 
