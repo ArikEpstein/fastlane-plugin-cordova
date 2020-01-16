@@ -84,9 +84,9 @@ module Fastlane
        platform = params[:platform]
        if platform && !File.directory?("./platforms/#{platform}")
          if params[:cordova_no_fetch]
-           sh "cordova platform add #{platform} --no-interactive --nofetch"
+           sh "cordova platform add #{platform} --no-telemetry --nofetch"
          else
-           sh "cordova platform add #{platform} --no-interactive"
+           sh "cordova platform add #{platform} --no-telemetry"
          end
        end
      end
@@ -114,7 +114,7 @@ module Fastlane
         ios_args = self.get_ios_args(params) if params[:platform].to_s == 'ios'
 
         if params[:cordova_prepare]
-          sh "cordova prepare #{params[:platform]} --no-interactive #{args.join(' ')}"
+          sh "cordova prepare #{params[:platform]} --no-telemetry #{args.join(' ')}"
         end
 
          # special handling for `build_number` param
@@ -130,10 +130,10 @@ module Fastlane
          end
 
         if params[:platform].to_s == 'ios'
-          sh "cordova compile #{params[:platform]} --no-interactive #{args.join(' ')} -- #{ios_args}"
+          sh "cordova compile #{params[:platform]} --no-telemetry #{args.join(' ')} -- #{ios_args}"
           # sh "cordova build #{params[:platform]} #{args.join(' ')} -- #{ios_args}"
         elsif params[:platform].to_s == 'android'
-          sh "cordova compile #{params[:platform]} --no-interactive #{args.join(' ')} -- -- #{android_args}"
+          sh "cordova compile #{params[:platform]} --no-telemetry #{args.join(' ')} -- -- #{android_args}"
         end
       end
 
