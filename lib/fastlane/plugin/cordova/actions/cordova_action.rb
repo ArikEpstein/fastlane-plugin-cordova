@@ -6,14 +6,19 @@ module Fastlane
     end
 
     class CordovaAction < Action
+      # valid action params
+
+
       ANDROID_ARGS_MAP = {
         keystore_path: 'keystore',
         keystore_password: 'storePassword',
         key_password: 'password',
         keystore_alias: 'alias',
+        bundle: 'bundle',
         build_number: 'versionCode',
         min_sdk_version: 'gradleArg=-PcdvMinSdkVersion',
-        cordova_no_fetch: 'cordovaNoFetch'
+        cordova_no_fetch: 'cordovaNoFetch',
+        verbose: 'verbose'
       }
 
       IOS_ARGS_MAP = {
@@ -87,7 +92,7 @@ module Fastlane
      end
 
       # app_name
-      def self.get_app_name()
+      def self.get_app_name
         config = REXML::Document.new(File.open('config.xml'))
         return config.elements['widget'].elements['name'].first.value
       end
@@ -97,7 +102,9 @@ module Fastlane
         args = [params[:release] ? '--release' : '--debug']
         args << '--device' if params[:device]
         args << '--prod' if params[:prod]
+        args << '--bundle' if params[:bundle]
         args << '--browserify' if params[:browserify]
+        args << '--verbose' if params[:verbose]
 
         if !params[:cordova_build_config_file].to_s.empty?
           args << "--buildConfig=#{Shellwords.escape(params[:cordova_build_config_file])}"
@@ -110,19 +117,18 @@ module Fastlane
           sh "cordova prepare #{params[:platform]} --no-interactive #{args.join(' ')}"
         end
 
-        # special handling for `build_number` param
-        if params[:platform].to_s == 'ios' && !params[:build_number].to_s.empty?
-          cf_bundle_version = params[:build_number].to_s
-          Actions::UpdateInfoPlistAction.run(
-            xcodeproj: "./platforms/ios/#{self.get_app_name}.xcodeproj",
-            plist_path: "#{self.get_app_name}/#{self.get_app_name}-Info.plist",
-            block: lambda { |plist|
-              plist['CFBundleVersion'] = cf_bundle_version
-            }
-          )
-        end
+         # special handling for `build_number` param
+         if params[:platform].to_s == 'ios' && !params[:build_number].to_s.empty?
+           cf_bundle_version = params[:build_number].to_s
+           Actions::UpdateInfoPlistAction.run(
+             xcodeproj: "./platforms/ios/#{self.get_app_name}.xcodeproj",
+             plist_path: "#{self.get_app_name}/#{self.get_app_name}-Info.plist",
+             block: lambda { |plist|
+               plist['CFBundleVersion'] = cf_bundle_version
+             }
+           )
+         end
 
-        sh "cordova compile #{params[:platform]} #{args.join(' ')} #{ios_args} -- #{android_args}"
         if params[:platform].to_s == 'ios'
           sh "cordova compile #{params[:platform]} --no-interactive #{args.join(' ')} -- #{ios_args}"
           # sh "cordova build #{params[:platform]} #{args.join(' ')} -- #{ios_args}"
@@ -133,7 +139,7 @@ module Fastlane
 
       # export build paths (run step #3)
       def self.set_build_paths(is_release)
-        app_name = self.get_app_name()
+        app_name = self.get_app_name
         build_type = is_release ? 'release' : 'debug'
 
         ENV['CORDOVA_ANDROID_RELEASE_BUILD_PATH'] = "./platforms/android/app/build/outputs/apk/#{build_type}/app-#{build_type}.apk"
@@ -227,6 +233,16 @@ module Fastlane
             default_value: ''
           ),
           FastlaneCore::ConfigItem.new(
+            key: :bundle,
+            env_name: "CORDOVA_ANDROID_BUNDLE",
+            description: "Use bundle for android",
+            is_string: false,
+            default_value: false,
+            verify_block: proc do |value|
+               UI.user_error!("Bundle should be boolean") unless [false, true].include? value
+            end
+          ),
+          FastlaneCore::ConfigItem.new(
             key: :keystore_path,
             env_name: "CORDOVA_ANDROID_KEYSTORE_PATH",
             description: "Path to the Keystore for Android",
@@ -304,7 +320,17 @@ module Fastlane
             is_string: true,
             optional: true,
             default_value: ''
-          )
+          ),
+           FastlaneCore::ConfigItem.new(
+              key: :verbose,
+              env_name: "CORDOVA_VERBOSE",
+              description: "Pipe out more verbose output to the shell",
+              default_value: false,
+              is_string: false,
+              verify_block: proc do |value|
+                UI.user_error!("Verbose should be boolean") unless [false, true].include? value
+              end
+           )
         ]
       end
 
