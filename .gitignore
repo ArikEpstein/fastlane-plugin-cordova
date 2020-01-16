@@ -1,4 +1,4 @@
-*.gem
+ *.gem
 Gemfile.lock
 
 ## Documentation cache and generated files:
@@ -8,3 +8,10 @@ Gemfile.lock
 /rdoc/
 fastlane/README.md
 fastlane/report.xml
+
+## Exclude bundle ruby
+.bundle/
+vendor/
+
+## Exclude intellij config
+.idea/

@@ -66,7 +66,7 @@ module Fastlane
 
         if params[:provisioning_profile].empty?
           # If `match` or `sigh` were used before this, use the certificates returned from there
-          params[:provisioning_profile] = ENV['SIGH_UUID'] || ENV["sigh_#{app_identifier}_#{params[:type].sub("-","")}"]
+          params[:provisioning_profile] = ENV['SIGH_UUID'] || ENV["sigh_#{app_identifier}_#{params[:type].sub('-', '')}"]
         end
 
         if params[:type] == 'adhoc'
@@ -79,17 +79,17 @@ module Fastlane
         return self.get_platform_args(params, IOS_ARGS_MAP)
       end
 
-    # add platform if missing (run step #1)
-     def self.check_platform(params)
-       platform = params[:platform]
-       if platform && !File.directory?("./platforms/#{platform}")
-         if params[:cordova_no_fetch]
-           sh "cordova platform add #{platform} --no-telemetry --nofetch"
-         else
-           sh "cordova platform add #{platform} --no-telemetry"
+        # add platform if missing (run step #1)
+       def self.check_platform(params)
+         platform = params[:platform]
+         if platform && !File.directory?("./platforms/#{platform}")
+           if params[:cordova_no_fetch]
+             sh "cordova platform add #{platform} --no-telemetry --nofetch"
+           else
+             sh "cordova platform add #{platform} --no-telemetry"
+           end
          end
        end
-     end
 
       # app_name
       def self.get_app_name
@@ -131,7 +131,6 @@ module Fastlane
 
         if params[:platform].to_s == 'ios'
           sh "cordova compile #{params[:platform]} --no-telemetry #{args.join(' ')} -- #{ios_args}"
-          # sh "cordova build #{params[:platform]} #{args.join(' ')} -- #{ios_args}"
         elsif params[:platform].to_s == 'android'
           sh "cordova compile #{params[:platform]} --no-telemetry #{args.join(' ')} -- -- #{android_args}"
         end
@@ -203,6 +202,7 @@ module Fastlane
             env_name: "CORDOVA_PROD",
             description: "Build for production",
             is_string: false,
+            optional: true,
             default_value: false,
             verify_block: proc do |value|
             UI.user_error!("Prod should be boolean") unless [false, true].include? value
@@ -237,10 +237,8 @@ module Fastlane
             env_name: "CORDOVA_ANDROID_BUNDLE",
             description: "Use bundle for android",
             is_string: false,
-            default_value: false,
-            verify_block: proc do |value|
-               UI.user_error!("Bundle should be boolean") unless [false, true].include? value
-            end
+            optional: true,
+            default_value: false
           ),
           FastlaneCore::ConfigItem.new(
             key: :keystore_path,
@@ -273,15 +271,16 @@ module Fastlane
           FastlaneCore::ConfigItem.new(
             key: :build_number,
             env_name: "CORDOVA_BUILD_NUMBER",
-            description: "Build Number for iOS",
+            description: "Sets the build number for iOS and version code for Android",
             optional: true,
-            is_string: false,
+            is_string: false
           ),
           FastlaneCore::ConfigItem.new(
             key: :browserify,
             env_name: "CORDOVA_BROWSERIFY",
             description: "Specifies whether to browserify build or not",
             default_value: false,
+            optional: true,
             is_string: false
           ),
           FastlaneCore::ConfigItem.new(
@@ -302,7 +301,7 @@ module Fastlane
             key: :cordova_no_fetch,
             env_name: "CORDOVA_NO_FETCH",
             description: "Call `cordova platform add` with `--nofetch` parameter",
-            default_value: false,
+            default_value: true,
             is_string: false
           ),
           FastlaneCore::ConfigItem.new(
@@ -325,19 +324,17 @@ module Fastlane
               key: :verbose,
               env_name: "CORDOVA_VERBOSE",
               description: "Pipe out more verbose output to the shell",
+              optional: true,
               default_value: false,
-              is_string: false,
-              verify_block: proc do |value|
-                UI.user_error!("Verbose should be boolean") unless [false, true].include? value
-              end
+              is_string: false
            )
         ]
       end
 
       def self.output
         [
-          ['CORDOVA_ANDROID_RELEASE_BUILD_PATH', 'Path to the signed release APK if it was generated'],
-          ['CORDOVA_IOS_RELEASE_BUILD_PATH', 'Path to the signed release IPA if it was generated']
+         ['CORDOVA_ANDROID_RELEASE_BUILD_PATH', 'Path to the signed release APK if it was generated'],
+         ['CORDOVA_IOS_RELEASE_BUILD_PATH', 'Path to the signed release IPA if it was generated']
         ]
       end
 
