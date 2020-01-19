@@ -84,15 +84,15 @@ module Fastlane
              platform = params[:platform]
              if platform && !File.directory?("./platforms/#{platform}")
                if params[:cordova_no_fetch]
-                 sh "cordova platform add #{platform} --nofetch"
+                 sh "cordova platform add #{platform} --no-telemetry --nofetch"
                else
-                 sh "cordova platform add #{platform}"
+                 sh "cordova platform add #{platform} --no-telemetry"
                end
              end
            end
 
       # app_name
-      def self.get_app_name()
+      def self.get_app_name
         config = REXML::Document.new(File.open('config.xml'))
         return config.elements['widget'].elements['name'].first.value
       end
@@ -114,7 +114,7 @@ module Fastlane
         ios_args = self.get_ios_args(params) if params[:platform].to_s == 'ios'
 
         if params[:cordova_prepare]
-          sh "cordova prepare #{params[:platform]} #{args.join(' ')}"
+          sh "cordova prepare #{params[:platform]} --no-telemetry #{args.join(' ')}"
         end
 
          # special handling for `build_number` param
@@ -130,9 +130,9 @@ module Fastlane
          end
 
         if params[:platform].to_s == 'ios'
-          sh "cordova compile #{params[:platform]} #{args.join(' ')} -- #{ios_args}"
+          sh "cordova compile #{params[:platform]} --no-telemetry #{args.join(' ')} -- #{ios_args}"
         elsif params[:platform].to_s == 'android'
-          sh "cordova compile #{params[:platform]} #{args.join(' ')} -- -- #{android_args}"
+          sh "cordova compile #{params[:platform]} --no-telemetry #{args.join(' ')} -- -- #{android_args}"
         end
       end
 
@@ -238,7 +238,10 @@ module Fastlane
             description: "Use bundle for android",
             is_string: false,
             optional: true,
-            default_value: false
+            default_value: false,
+            verify_block: proc do |value|
+               UI.user_error!("Bundle should be boolean") unless [false, true].include? value
+            end
           ),
           FastlaneCore::ConfigItem.new(
             key: :keystore_path,
@@ -326,7 +329,10 @@ module Fastlane
               description: "Pipe out more verbose output to the shell",
               optional: true,
               default_value: false,
-              is_string: false
+              is_string: false,
+              verify_block: proc do |value|
+                 UI.user_error!("Verbose should be boolean") unless [false, true].include? value
+               end
            )
         ]
       end
