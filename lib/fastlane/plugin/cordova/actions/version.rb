@@ -11,7 +11,7 @@ module Fastlane
 
         Fastlane::Actions::BumpVersionAction.run(
           message:
-            "fastlane(#{platform[:platform]}): build #{
+            "fastlane(#{params[:platform].to_s == 'ios' ? 'ios' : 'android'}): build #{
               version_and_build_number[:build_number]
             }, version: #{version_and_build_number[:version]}"
         )
