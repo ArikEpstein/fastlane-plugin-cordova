@@ -1,6 +1,6 @@
 module Fastlane
   module Actions
-    class IncrementBuildNumberAction < Action
+    class IncrementNumberAction < Action
       def self.run(params)
         text = File.read(params[:pathToConfigXML])
         puts "test #{text}"

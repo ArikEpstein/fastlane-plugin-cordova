@@ -13,6 +13,7 @@ module Fastlane
     class UpdateVersionAndBuildNumberAction < Action
       def self.run(params)
         version = ''
+        build_number = ''
         if (params[:skip_version])
           puts('skipping version, just incrementing build number')
           old_version =
@@ -27,13 +28,13 @@ module Fastlane
             )
         end
         build_number =
-          Fastlane::Actions::IncrementBuildNumberAction.run(
+          Fastlane::Actions::IncrementNumberAction.run(
             pathToConfigXML: params[:pathToConfigXML],
             platform: params[:platform]
           )
 
-        ENV['APP_BUILD_NUMBER'] = version
-        ENV['APP_BUILD_VERSION'] = build_number
+        ENV['APP_BUILD_NUMBER'] = version.to_s
+        ENV['APP_BUILD_VERSION'] = build_number.to_s
 
         return { version: version, build_number: build_number }
       end
