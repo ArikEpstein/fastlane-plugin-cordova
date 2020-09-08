@@ -1,9 +1,5 @@
 module Fastlane
   module Actions
-    module SharedValues
-      UPDATE_VERSION_CUSTOM_VALUE = :UPDATE_VERSION_CUSTOM_VALUE
-    end
-
     class UpdateVersionAction < Action
       def self.run(params)
         # fastlane will take care of reading in the parameter and fetching the environment variable:

@@ -150,7 +150,9 @@ module Fastlane
       end
 
       def self.run(params)
-        Fastlane::Actions::CleanInstallAction.run(params) if params[:fresh]
+      # if params[:fresh]
+       # Fastlane::Actions::CleanInstallAction.run(params)
+     #  end
         self.check_platform(params)
         self.build(params)
         self.set_build_paths(params[:release])

@@ -1,9 +1,5 @@
 module Fastlane
   module Actions
-    module SharedValues
-      BUILD_ANDROID_CUSTOM_VALUE = :BUILD_ANDROID_CUSTOM_VALUE
-    end
-
     class BumpVersionAction < Action
       def self.run(params)
         sh 'git add config.xml'

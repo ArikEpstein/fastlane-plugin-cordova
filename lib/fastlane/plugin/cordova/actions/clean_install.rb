@@ -1,9 +1,5 @@
 module Fastlane
   module Actions
-    module SharedValues
-      BUILD_ANDROID_CUSTOM_VALUE = :BUILD_ANDROID_CUSTOM_VALUE
-    end
-
     class CleanInstallAction < Action
       def self.run(params)
         if params[:platform].to_s == 'ios' ||
@@ -80,17 +76,6 @@ module Fastlane
                 end
               end
           )
-        ]
-      end
-
-      def self.output
-        # Define the shared values you are going to provide
-        # Example
-        [
-          [
-            'BUILD_ANDROID_CUSTOM_VALUE',
-            'A description of what this value contains'
-          ]
         ]
       end
 

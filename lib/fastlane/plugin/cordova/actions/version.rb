@@ -1,9 +1,5 @@
 module Fastlane
   module Actions
-    module SharedValues
-      BUILD_CORDOVA_ANDROID_CUSTOM_VALUE = :BUILD_CORDOVA_ANDROID_CUSTOM_VALUE
-    end
-
     class VersionAction < Action
       def self.run(params)
         version_and_build_number =
@@ -122,17 +118,6 @@ module Fastlane
             default_value: false,
             type: Boolean
           )
-        ]
-      end
-
-      def self.output
-        # Define the shared values you are going to provide
-        # Example
-        [
-          [
-            'BUILD_CORDOVA_ANDROID_CUSTOM_VALUE',
-            'A description of what this value contains'
-          ]
         ]
       end
 
