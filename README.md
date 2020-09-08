@@ -15,8 +15,6 @@ This project is a [fastlane](https://github.com/fastlane/fastlane) plugin. To ge
 fastlane add_plugin cordova
 ```
 
-:warning: *If you're using a Cordova version below 7, you need to use version `1.0.1` of this plugin*
-
 Then you can integrate it into your Fastlane setup:
 
 ```ruby
@@ -94,6 +92,105 @@ Which will produce:
 | **cordova_prepare**      | Specifies whether to run `cordova prepare` before building  | CORDOVA_PREPARE               |  *true*   |
 | **cordova_no_fetch**      | Specifies whether to run `cordova platform add` with `--nofetch` parameter  | CORDOVA_NO_FETCH               |  *false*   |
 | **cordova_build_config_file**      | Call `cordova compile` with `--buildConfig=<ConfigFile>` to specify build config file path  | CORDOVA_BUILD_CONFIG_FILE               |     |
+
+
+## Actions
+
+This [Fastfile](./fastlane-plugin-fivethree_ionic/fastlane/Fastfile) contains example of the following actions.
+
+| Action                                                              | Description                                                   |
+| ------------------------------------------------------------------- | ------------------------------------------------------------- |
+| [add_transparent_statusbar](#add_transparent_statusbar)     |
+| [build_android](#build_android)                 |
+| [android_keystore](#android_keystore)                       | Generate an Android keystore file or validate keystore exists |
+| [build_android](#build_android)                 |
+| [bump_version](#bump_version)                               |
+| [clean_install](#clean_install)                             |
+| [increment_build_no](#increment_build_no)                   |
+| [select_env](#select_env)                                   | Select an environment folder for white labeling the app       |
+| [sign_android](#sign_android)                               | Zipalign, sign and verify apk                                 |
+| [update_version](#update_version)                           |
+| [update_version_and_build_number](#update_version_and_build_number) |
+| [version](#version)                                         |
+
+### add_transparent_statusbar
+
+### android_keystore
+
+Generate an Android keystore file or validate keystore exists
+
+#### Options
+
+| Options       | Description               | Type     | Default              | Required |
+| ------------- | ------------------------- | -------- | -------------------- | -------- |
+| keystore_path | Path to the android       | `string` | `./fastlane/android` | `false`  |
+| keystore_name | Name of the keystore      | `string` |                      | `true`   |
+| key_alias     | Key alias of the keystore | `string` |                      | `true`   |
+
+### build_android
+
+### bump_version
+
+### clean_install
+
+### increment_build_number
+
+#### CI
+
+Environment selection can also be passed as an option for a non interactive environment. Add the option `env` to `before_all` and assign it to an environment variable `ENV`.
+
+```ruby
+before_all do |lane, options|
+  ENV['ENV'] = options[:env]
+end
+```
+
+#### Options
+
+| Options             | Description                                     | Type     | Default        | Required |
+| ------------------- | ----------------------------------------------- | -------- | -------------- | -------- |
+| environments_folder | Path to your environments white label resources | `string` | `environments` | `false` 
+
+### sign_android
+
+Zipaligns, [signs v2](https://source.android.com/security/apksigning/v2) and verifys an apk with a keystore. If the keystore does not exists it uses `android_keystore` to create a new keystore.
+
+```ruby
+# run before signing: cordova build android --prod --release
+
+apk_path =
+  sign_android(
+    keystore_name: 'pizza',
+    key_alias: 'pizza',
+    app_version: '1.0.1',
+    app_build_no: '2020',
+    apk_output_dir: './apk',
+    silent: true
+  )
+```
+
+#### Options
+
+| Options                    | Description                                                          | Type     | Default                                                                               | Required |
+| -------------------------- | -------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------- | -------- |
+| keystore_path              | Path to the android                                                  | `string` | `./fastlane/android`                                                                  | `false`  |
+| keystore_name              | Name of the keystore used to store storepass and keypass in keychain | `string` |                                                                                       | `true`   |
+| android_sdk_path           | Path to your installed Android SDK                                   | `string` | `~/Library/Android/sdk`                                                               | `false`  |
+| android_build_tool_version | Android Build Tool version used for `zipalign`, `sign` and `verify`  | `string` | `28.0.3`                                                                              | `false`  |
+| apk_source                 | Android Build Tool version used for `zipalign`, `sign` and `verify`  | `string` | `./platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk`          | `false`  |
+| apk_zipalign_target        | Target path for the zipaligned apk                                   | `string` | `./platforms/android/app/build/outputs/apk/release/app-release-unsigned-zipalign.apk` | `false`  |
+| apk_signed_target          | Target path of the signed apk                                        | `string` | `./platforms/android/app/build/outputs/apk/release`                                   | `false`  |
+| key_alias                  | Key alias of the keystore                                            | `string` |                                                                                       | `true`   |
+| app_version                | App version                                                          | `string` |                                                                                       | `true`   |
+| app_build_no               | App build number                                                     | `string` |                                                                                       | `true`   |
+
+### update_version
+
+### update_version_and_build_number
+
+### version
+
+
 
 ## Run tests for this plugin
 

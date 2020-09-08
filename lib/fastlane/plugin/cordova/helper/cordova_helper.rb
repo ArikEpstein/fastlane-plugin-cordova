@@ -5,7 +5,7 @@ module Fastlane
       # as `Helper::CordovaHelper.your_method`
       #
       def self.show_message
-        UI.message("Hello from the cordova plugin helper!")
+        UI.message('Hello from the cordova plugin helper!')
       end
     end
   end

@@ -1,0 +1,111 @@
+module Fastlane
+  module Actions
+    class IncrementBuildNumberAction < Action
+      def self.run(params)
+        text = File.read(params[:pathToConfigXML])
+        puts "test #{text}"
+
+        if params[:platform].to_s == 'ios'
+          app_build_number =
+            sh "echo \"cat //*[local-name()='widget']/@ios-CFBundleVersion\" | xmllint --shell #{
+                 params[:pathToConfigXML]
+               }|  awk -F'[=\"]' '!/>/{print $(NF-1)}'"
+          puts app_build_number.length
+
+          if (app_build_number.length == 0)
+            new_contents =
+              text.gsub(/<widget /, "<widget ios-CFBundleVersion=\"#{1}\" ")
+          else
+            build_number = app_build_number.to_i + 1
+            new_contents =
+              text.gsub(
+                /ios-CFBundleVersion="[0-9]*"/,
+                "ios-CFBundleVersion=\"#{build_number}\""
+              )
+          end
+        else
+          app_build_number =
+            sh "echo \"cat //*[local-name()='widget']/@android-versionCode\" | xmllint --shell #{
+                 params[:pathToConfigXML]
+               }|  awk -F'[=\"]' '!/>/{print $(NF-1)}'"
+          puts app_build_number.length
+
+          if (app_build_number.length == 0)
+            new_contents =
+              text.gsub(/<widget /, "<widget android-versionCode=\"#{1}\" ")
+          else
+            build_number = app_build_number.to_i + 1
+            new_contents =
+              text.gsub(
+                /android-versionCode="[0-9]*"/,
+                "android-versionCode=\"#{build_number}\""
+              )
+          end
+        end
+
+        File.open(params[:pathToConfigXML], 'w') do |file|
+          file.puts new_contents
+        end
+        return build_number
+      end
+
+      def self.description
+        'fastlane plugin for Cordova'
+      end
+
+      def self.authors
+        ['Gary Großgarten']
+      end
+
+      def self.return_value
+        'returns the new app build number'
+      end
+
+      def self.details
+        # Optional:
+        ''
+      end
+
+      def self.available_options
+        [
+          FastlaneCore::ConfigItem.new(
+            key: :platform,
+            env_name: 'CORDOVA_PLATFORM',
+            description: 'Platform. Should be either android or ios',
+            is_string: true,
+            default_value: '',
+            verify_block:
+              proc do |value|
+                unless ['', 'android', 'ios'].include? value
+                  UI.user_error!('Platform should be either android or ios')
+                end
+              end
+          ),
+          FastlaneCore::ConfigItem.new(
+            key: :pathToConfigXML,
+            env_name: 'INCREMENT_BUILD_CONFIG',
+            description: '---',
+            optional: false,
+            verify_block:
+              proc do |value|
+                unless File.exist?(value)
+                  UI.user_error!(
+                    'Couldnt find config.xml! Please change your path.'
+                  )
+                end
+              end,
+            type: String
+          )
+        ]
+      end
+
+      def self.is_supported?(platform)
+        # Adjust this if your plugin only works for a particular platform (iOS vs. Android, for example)
+        # See: https://docs.fastlane.tools/advanced/#control-configuration-by-lane-and-by-platform
+        #
+        # [:ios, :mac, :android].include?(platform)
+        true
+      end
+    end
+  end
+end
