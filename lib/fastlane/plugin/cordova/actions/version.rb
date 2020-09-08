@@ -11,9 +11,11 @@ module Fastlane
 
         Fastlane::Actions::BumpVersionAction.run(
           message:
-            "fastlane(#{params[:platform].to_s == 'ios' ? 'ios' : 'android'}): build #{
-              version_and_build_number[:build_number]
-            }, version: #{version_and_build_number[:version]}"
+            "fastlane(#{
+              params[:platform].to_s == 'ios' ? 'ios' : 'android'
+            }): build #{version_and_build_number[:build_number]}, version: #{
+              version_and_build_number[:version]
+            }"
         )
 
         Fastlane::Actions::PushToGitRemoteAction.run(

@@ -20,8 +20,10 @@ module Fastlane
           puts 'take new version number'
           version = new_version_number
         else
-          puts 'take old version number'
-          version = old_version
+          # puts 'take old version number'
+          # version = old_version
+          puts 'take the version from project package.json'
+          version = sh "npx -c 'echo \"$npm_package_version\"'"
         end
 
         text = File.read(params[:pathToConfigXML])

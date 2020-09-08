@@ -43,7 +43,7 @@ module Fastlane
           end
         end
 
-       puts build_number
+        puts build_number
 
         File.open(params[:pathToConfigXML], 'w') do |file|
           file.puts new_contents
