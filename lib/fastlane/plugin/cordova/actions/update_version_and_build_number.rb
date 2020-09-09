@@ -24,7 +24,8 @@ module Fastlane
         else
           version =
             Fastlane::Actions::UpdateVersionAction.run(
-              pathToConfigXML: params[:pathToConfigXML]
+              pathToConfigXML: params[:pathToConfigXML],
+              auto_increment: params[:auto_increment]
             )
         end
         build_number =
@@ -93,6 +94,14 @@ module Fastlane
                 end
               end,
             type: String
+          ),
+          FastlaneCore::ConfigItem.new(
+            key: :auto_increment,
+            env_name: 'AUTO_INCREMENT',
+            description: 'Auto increment app version',
+            optional: true,
+            default_value: true,
+            type: Boolean
           ),
           FastlaneCore::ConfigItem.new(
             key: :skip_version,

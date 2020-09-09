@@ -6,7 +6,8 @@ module Fastlane
           Fastlane::Actions::UpdateVersionAndBuildNumberAction.run(
             platform: params[:platform],
             pathToConfigXML: params[:pathToConfigXML],
-            skip_version: params[:skip_version]
+            skip_version: params[:skip_version],
+            auto_increment: params[:auto_increment]
           )
 
         Fastlane::Actions::BumpVersionAction.run(
@@ -111,6 +112,14 @@ module Fastlane
             env_name: 'FL_GIT_PUSH_REMOTE',
             description: 'The remote to push to',
             default_value: 'origin'
+          ),
+          FastlaneCore::ConfigItem.new(
+            key: :auto_increment,
+            env_name: 'AUTO_INCREMENT',
+            description: 'Auto increment app version',
+            optional: true,
+            default_value: true,
+            type: Boolean
           ),
           FastlaneCore::ConfigItem.new(
             key: :skip_version,

@@ -2,28 +2,30 @@ module Fastlane
   module Actions
     class UpdateVersionAction < Action
       def self.run(params)
-        # fastlane will take care of reading in the parameter and fetching the environment variable:
-        old_version =
-          sh "echo \"cat //*[local-name()='widget']/@version\" | xmllint --shell #{
-               params[:pathToConfigXML]
-             }|  awk -F'[=\"]' '!/>/{print $(NF-1)}'"
-        old_version = old_version.delete!("\n")
-        puts "current version: #{old_version}"
-
-        puts "Insert new version number, current version in config.xml is '#{
-               old_version
-             }' (Leave empty and press enter to skip this step): "
-        new_version_number = STDIN.gets.strip
-        puts "new version: #{new_version_number}"
-
-        if new_version_number.length > 0
-          puts 'take new version number'
-          version = new_version_number
-        else
-          # puts 'take old version number'
-          # version = old_version
+        if (params[:auto_increment])
           puts 'take the version from project package.json'
           version = sh "npx -c 'echo \"$npm_package_version\"'"
+        else
+          old_version =
+            sh "echo \"cat //*[local-name()='widget']/@version\" | xmllint --shell #{
+                 params[:pathToConfigXML]
+               }|  awk -F'[=\"]' '!/>/{print $(NF-1)}'"
+          old_version = old_version.delete!("\n")
+          puts "current version: #{old_version}"
+
+          puts "Insert new version number, current version in config.xml is '#{
+                 old_version
+               }' (Leave empty and press enter to skip this step): "
+          new_version_number = STDIN.gets.strip
+          puts "new version: #{new_version_number}"
+
+          if new_version_number.length > 0
+            puts 'take new version number'
+            version = new_version_number
+          else
+            puts 'take old version number'
+            version = old_version
+          end
         end
 
         text = File.read(params[:pathToConfigXML])
@@ -55,6 +57,14 @@ module Fastlane
         # Define all options your action supports.
 
         [
+          FastlaneCore::ConfigItem.new(
+            key: :auto_increment,
+            env_name: 'AUTO_INCREMENT',
+            description: 'Auto increment app version',
+            optional: true,
+            default_value: true,
+            type: Boolean
+          ),
           FastlaneCore::ConfigItem.new(
             key: :pathToConfigXML,
             env_name: 'INCREMENT_BUILD_CONFIG',
