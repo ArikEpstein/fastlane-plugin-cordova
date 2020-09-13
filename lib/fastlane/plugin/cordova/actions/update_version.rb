@@ -4,7 +4,9 @@ module Fastlane
       def self.run(params)
         if (params[:auto_increment])
           puts 'take the version from project package.json'
-          version = sh "npx -c 'echo \"$npm_package_version\"'"
+          version = sh "npx -c 'echo $npm_package_version'"
+         # version = sh "npx -c 'echo \"$npm_package_version\"'"
+          version = version.delete!("\n")
         else
           old_version =
             sh "echo \"cat //*[local-name()='widget']/@version\" | xmllint --shell #{

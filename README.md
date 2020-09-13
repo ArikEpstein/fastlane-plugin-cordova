@@ -205,6 +205,12 @@ To automatically fix many of the styling issues, use
 rubocop -a
 ```
 
+To automatically code formatting with prettier, use 
+
+```
+bundle exec rbprettier --write '**/*.rb'
+```
+
 ## Issues and Feedback
 
 For any other issues and feedback about this plugin, please submit it to this repository.
