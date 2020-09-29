@@ -5,7 +5,7 @@ module Fastlane
         if (params[:auto_increment])
           puts 'take the version from project package.json'
           version = sh "npx -c 'echo $npm_package_version'"
-         # version = sh "npx -c 'echo \"$npm_package_version\"'"
+          # version = sh "npx -c 'echo \"$npm_package_version\"'"
           version = version.delete!("\n")
         else
           old_version =
