@@ -25,14 +25,12 @@ module Fastlane
                     sh "echo \"cat //*[local-name()='widget']/@ios-CFBundleVersion\" | xmllint --shell #{
                          params[:pathToConfigXML]
                        }|  awk -F'[=\"]' '!/>/{print $(NF-1)}'"
-
-            end
-             else
+           else
               app_build_number =
                 sh "echo \"cat //*[local-name()='widget']/@android-versionCode\" | xmllint --shell #{
                      params[:pathToConfigXML]
                    }|  awk -F'[=\"]' '!/>/{print $(NF-1)}'"
-             end
+           end
 
         ENV['APP_BUILD_NUMBER'] = version.to_s
         ENV['APP_BUILD_VERSION'] = app_build_number.to_s
