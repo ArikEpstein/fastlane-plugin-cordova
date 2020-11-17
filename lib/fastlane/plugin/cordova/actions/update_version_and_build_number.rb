@@ -34,8 +34,8 @@ module Fastlane
             platform: params[:platform]
           )
 
-        ENV['APP_BUILD_NUMBER'] = version.to_s
-        ENV['APP_BUILD_VERSION'] = build_number.to_s
+        ENV['APP_BUILD_VERSION'] = version.to_s
+        ENV['APP_BUILD_NUMBER'] = build_number.to_s
 
         return { version: version, build_number: build_number }
       end

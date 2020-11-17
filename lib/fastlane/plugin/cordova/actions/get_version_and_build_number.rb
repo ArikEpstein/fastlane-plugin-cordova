@@ -32,8 +32,8 @@ module Fastlane
                    }|  awk -F'[=\"]' '!/>/{print $(NF-1)}'"
            end
 
-        ENV['APP_BUILD_NUMBER'] = version.to_s
-        ENV['APP_BUILD_VERSION'] = app_build_number.to_s
+        ENV['APP_BUILD_VERSION'] = version.to_s
+        ENV['APP_BUILD_NUMBER'] = app_build_number.to_s
 
         return { version: version, build_number: build_number }
       end
